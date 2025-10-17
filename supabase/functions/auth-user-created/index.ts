@@ -105,7 +105,7 @@ export default async function handler(req: Request): Promise<Response> {
   // create_date / update_date はテーブル側で DEFAULT now() を持つ前提
   // create_user / update_user は規約に合わせ 'system' を設定
   const insertPayload: Record<string, unknown> = {
-    user_id: user.id,
+    auth_user_id: user.id,
     email: user.email ?? null,
     create_user: "system",
     update_user: "system",
@@ -113,7 +113,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   const { error } = await supabase
     .from("m_user")
-    .upsert([insertPayload], { onConflict: "user_id", ignoreDuplicates: true });
+    .upsert([insertPayload], { onConflict: "auth_user_id", ignoreDuplicates: true });
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
