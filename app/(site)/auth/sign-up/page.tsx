@@ -124,7 +124,7 @@ export default function Page() {
       const birthdate = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/auth/sign-in` : undefined;
 
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -145,7 +145,20 @@ export default function Page() {
       });
 
       if (error) {
-        setErrorMessage(error.message);
+        const msg = error.message || "";
+        if (/already\s*registered|already\s*exists|identit(y|ies).*exist/i.test(msg)) {
+          setErrorMessage("このメールアドレスは既に登録済みです。ログインしてください。");
+        } else {
+          setErrorMessage(error.message);
+        }
+        return;
+      }
+
+      // 既存メールで signUp を呼ぶと、error が無くても identities が空配列で返るケースがある
+      type SignUpUser = { user?: { identities?: Array<unknown> } } | null;
+      const identities = (signUpData as SignUpUser)?.user?.identities;
+      if (identities && identities.length === 0) {
+        setErrorMessage("このメールアドレスは既に登録済みです。ログインしてください。");
         return;
       }
 
