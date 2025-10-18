@@ -27,17 +27,26 @@ export default function Page() {
     setSubmitting(true);
     setErrorMessage(null);
     try {
+      const normalizedEmail = email.trim().toLowerCase();
+      const normalizedPassword = password.trim();
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: normalizedEmail,
+        password: normalizedPassword,
       });
 
       if (error) {
-        setErrorMessage(error.message);
+        if (error.message === "Invalid login credentials") {
+          setErrorMessage("メールアドレスまたはパスワードが正しくありません。");
+        } else if (/Email not confirmed/i.test(error.message)) {
+          setErrorMessage("メール認証が未完了です。届いたメールのリンクを開いてください。");
+        } else {
+          setErrorMessage(error.message);
+        }
         return;
       }
 
-      router.replace("/");
+      router.replace("/record");
       router.refresh();
     } catch {
       setErrorMessage("予期せぬエラーが発生しました。");
