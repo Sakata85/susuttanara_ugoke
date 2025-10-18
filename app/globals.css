@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #ffeb00; /* ラーメン二郎 看板イエロー */
+  --foreground: #111111; /* 濃いめの黒 */
 }
 
 @theme inline {
@@ -12,12 +12,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ラーメン二郎看板モチーフのためダークモードも固定 */
 
 body {
   background: var(--background);
