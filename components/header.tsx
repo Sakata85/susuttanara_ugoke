@@ -29,15 +29,15 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="border-b bg-white">
-      <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
+    <header className="border-b border-black bg-[#ffeb00]">
+      <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between px-4 text-black">
         <h1 className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-sm font-bold text-black sm:text-base">
           すすったなら動け！
         </h1>
         {!loading && !isAuthenticated && (
           <Link
             href="/auth/sign-in"
-            className="flex flex-col items-center gap-0.5"
+            className="flex flex-col items-center gap-0.5 text-black"
             aria-label="Login"
           >
             <Image src="/login.svg" alt="Login" width={24} height={24} />
