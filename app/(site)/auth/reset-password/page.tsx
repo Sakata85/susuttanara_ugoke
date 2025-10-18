@@ -18,6 +18,18 @@ export default function Page() {
   const [isRecovery, setIsRecovery] = useState(false);
 
   useEffect(() => {
+    // メールリンクで遷移したURLからセッションを確立
+    (async () => {
+      try {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+        if (!error && data?.session) {
+          setIsRecovery(true);
+        }
+      } catch {
+        // noop
+      }
+    })();
+
     const { data } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === "PASSWORD_RECOVERY") {
         setIsRecovery(true);
