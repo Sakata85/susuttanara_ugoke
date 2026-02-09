@@ -3,6 +3,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Image } from "https://deno.land/x/imagescript@1.2.15/mod.ts";
+import { getAuthToken, verifySupabaseJWT } from "../_shared/jwt.ts";
 
 function corsHeaders(origin: string | null) {
   return {
@@ -22,17 +23,17 @@ serve(async (req: Request) => {
   if (req.method !== "POST") return new Response(JSON.stringify({ error: "Method Not Allowed" }), { status: 405, headers: { "content-type": "application/json", ...corsHeaders(origin) } });
 
   const url = getEnv("PROJECT_URL", "SUPABASE_URL");
-  const anon = getEnv("ANON_KEY", "SUPABASE_ANON_KEY");
   const service = getEnv("SERVICE_ROLE_KEY", "SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !service) return new Response(JSON.stringify({ error: "Server misconfiguration" }), { status: 500, headers: { "content-type": "application/json", ...corsHeaders(origin) } });
 
-  // 認証
-  const authHeader = req.headers.get("Authorization") ?? "";
-  if (!/^Bearer\s+.+/.test(authHeader) || !anon) return new Response(JSON.stringify({ error: "UNAUTHENTICATED" }), { status: 401, headers: { "content-type": "application/json", ...corsHeaders(origin) } });
-  const authClient = createClient(url, anon, { auth: { persistSession: false }, global: { headers: { Authorization: authHeader } } });
-  const { data: userData } = await authClient.auth.getUser();
-  const userId = userData?.user?.id;
-  if (!userId) return new Response(JSON.stringify({ error: "UNAUTHENTICATED" }), { status: 401, headers: { "content-type": "application/json", ...corsHeaders(origin) } });
+  let userId: string;
+  try {
+    const token = getAuthToken(req);
+    const { sub } = await verifySupabaseJWT(token);
+    userId = sub;
+  } catch (_e) {
+    return new Response(JSON.stringify({ error: "UNAUTHENTICATED" }), { status: 401, headers: { "content-type": "application/json", ...corsHeaders(origin) } });
+  }
 
   // form-data
   const contentType = req.headers.get("content-type") ?? "";

@@ -6,6 +6,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { getAuthToken, verifySupabaseJWT } from "../_shared/jwt.ts";
 
 const TABLE_NAME = "t_record";
 
@@ -30,25 +31,19 @@ function getEnv(name: string, alt?: string): string | null {
   return Deno.env.get(name) ?? (alt ? Deno.env.get(alt) ?? null : null);
 }
 
-async function getAuthUser(req: Request) {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader || !/^Bearer\s+.+/.test(authHeader)) {
-    return { user: null, error: "Authorization header required" } as const;
+async function getAuthUser(req: Request): Promise<{ user: { id: string } | null; error: string | null }> {
+  try {
+    const token = getAuthToken(req);
+    const { sub } = await verifySupabaseJWT(token);
+    return { user: { id: sub }, error: null };
+  } catch (e) {
+    return { user: null, error: (e as Error).message };
   }
-  const url = getEnv("SUPABASE_URL", "PROJECT_URL");
-  const anonKey = getEnv("SUPABASE_ANON_KEY", "ANON_KEY");
-  if (!url || !anonKey) return { user: null, error: "Missing SUPABASE_URL/SUPABASE_ANON_KEY" } as const;
-  const supabase = createClient(url, anonKey, {
-    global: { headers: { Authorization: authHeader } },
-  });
-  const { data, error } = await supabase.auth.getUser();
-  if (error) return { user: null, error: error.message } as const;
-  return { user: data.user, error: null } as const;
 }
 
 function adminClient() {
-  const url = getEnv("SUPABASE_URL", "PROJECT_URL");
-  const serviceKey = getEnv("SUPABASE_SERVICE_ROLE_KEY", "SERVICE_ROLE_KEY");
+  const url = getEnv("PROJECT_URL", "SUPABASE_URL");
+  const serviceKey = getEnv("SERVICE_ROLE_KEY", "SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !serviceKey) throw new Error("Missing PROJECT_URL/SERVICE_ROLE_KEY");
   return createClient(url, serviceKey);
 }
@@ -58,7 +53,12 @@ serve(async (req: Request) => {
 
   try {
     const { user, error: authError } = await getAuthUser(req);
-    if (!user) return json({ error: authError ?? "unauthorized" }, { status: 401, headers: cors(req) });
+    if (!user) {
+      console.error("[records] auth failed:", authError);
+      const errMsg = authError ?? "unauthorized";
+      const headers = { ...cors(req), "X-Auth-Error": errMsg.slice(0, 200) } as HeadersInit;
+      return json({ error: errMsg }, { status: 401, headers });
+    }
 
     if (req.method === "GET") {
       const sb = adminClient();
@@ -70,7 +70,7 @@ serve(async (req: Request) => {
         .eq("auth_user_id", user.id)
         .order("create_date", { ascending: false })
         .order("id", { ascending: false });
-      if (error) return json({ error: error.message }, { status: 500, headers: cors(req) });
+      if (error) return json({ error: "履歴の取得に失敗しました", message: error.message }, { status: 500, headers: cors(req) });
       return json(data ?? [], { status: 200, headers: cors(req) });
     }
 
@@ -100,14 +100,15 @@ serve(async (req: Request) => {
       };
 
       const sb = adminClient();
-      const { error } = await sb.from(TABLE_NAME).insert([payload]);
-      if (error) return json({ error: error.message }, { status: 500, headers: cors(req) });
-      return json({ status: "ok" }, { status: 200, headers: cors(req) });
+      const { data: inserted, error } = await sb.from(TABLE_NAME).insert([payload]).select("id").single();
+      if (error) return json({ error: "保存に失敗しました", message: error.message }, { status: 500, headers: cors(req) });
+      return json({ status: "ok", id: inserted?.id ?? null }, { status: 200, headers: cors(req) });
     }
 
     return json({ error: "method not allowed" }, { status: 405, headers: cors(req) });
   } catch (e) {
-    return json({ error: (e as Error).message }, { status: 500, headers: cors(req) });
+    const msg = (e as Error).message;
+    return json({ error: "サーバーエラーが発生しました", message: msg }, { status: 500, headers: cors(req) });
   }
 });
 

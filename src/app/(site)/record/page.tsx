@@ -285,17 +285,26 @@ export default function RecordPage() {
               image_url: imageUrl,
             };
 
-            type ServerResult = { status?: string; error?: string } | null;
-            const { data, error } = await supabase.functions.invoke<ServerResult>("records", {
+            const recordsUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL!}/functions/v1/records`;
+            const res = await fetch(recordsUrl, {
               method: "POST",
-              body: payload,
-              headers: { Authorization: `Bearer ${accessToken}` },
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+                apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+              },
+              body: JSON.stringify(payload),
             });
-            if (error) {
-              const serverMessage = (data && typeof data === "object" && "error" in data)
-                ? (data as { error?: string }).error
-                : undefined;
-              alert(`保存に失敗しました: ${serverMessage ?? error.message}`);
+
+            const resBody = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+            if (res.status === 401) {
+              alert("ログインし直してください。");
+              router.push("/auth/sign-in");
+              return;
+            }
+            if (!res.ok) {
+              const msg = resBody.error ?? resBody.message ?? `HTTP ${res.status}`;
+              alert(`保存に失敗しました: ${msg}`);
               return;
             }
 

@@ -29,17 +29,40 @@ export default function HistoryPage() {
     (async () => {
       setLoading(true);
       setError(null);
-      const { data, error } = await supabase.functions.invoke<RecordItem[]>(
-        "records",
-        { method: "GET" },
-      );
-      if (cancelled) return;
-      if (error) {
-        setError(error.message);
-        setRecords([]);
-      } else {
-        setRecords(data ?? []);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        if (!cancelled) {
+          setError("ログインしてください");
+          setRecords([]);
+        }
+        setLoading(false);
+        return;
       }
+      const recordsUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL!}/functions/v1/records`;
+      const res = await fetch(recordsUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        },
+      });
+      if (cancelled) return;
+      const resBody = (await res.json().catch(() => ({}))) as RecordItem[] | { error?: string; message?: string };
+      if (res.status === 401) {
+        setError("ログインし直してください");
+        setRecords([]);
+        setLoading(false);
+        return;
+      }
+      if (!res.ok) {
+        const err = Array.isArray(resBody) ? "" : (resBody.error ?? resBody.message ?? `HTTP ${res.status}`);
+        setError(err || "履歴の取得に失敗しました");
+        setRecords([]);
+        setLoading(false);
+        return;
+      }
+      setRecords(Array.isArray(resBody) ? resBody : []);
       setLoading(false);
     })();
     return () => {

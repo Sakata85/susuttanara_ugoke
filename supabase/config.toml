@@ -301,6 +301,12 @@ enabled = false
 # Obtain from https://clerk.com/setup/supabase
 # domain = "example.clerk.accounts.dev"
 
+# ゲートウェイの JWT 検証をオフにし、Function 内で JWKS 検証を行う（非対称鍵対応）
+[functions.records]
+verify_jwt = false
+[functions.upload-image]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.
