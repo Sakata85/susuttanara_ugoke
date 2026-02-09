@@ -31,11 +31,15 @@ function getEnv(name: string, alt?: string): string | null {
 }
 
 async function getAuthUser(req: Request) {
-  const url = getEnv("PROJECT_URL", "SUPABASE_URL");
-  const anonKey = getEnv("ANON_KEY", "SUPABASE_ANON_KEY");
-  if (!url || !anonKey) return { user: null, error: "Missing PROJECT_URL/ANON_KEY" } as const;
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || !/^Bearer\s+.+/.test(authHeader)) {
+    return { user: null, error: "Authorization header required" } as const;
+  }
+  const url = getEnv("SUPABASE_URL", "PROJECT_URL");
+  const anonKey = getEnv("SUPABASE_ANON_KEY", "ANON_KEY");
+  if (!url || !anonKey) return { user: null, error: "Missing SUPABASE_URL/SUPABASE_ANON_KEY" } as const;
   const supabase = createClient(url, anonKey, {
-    global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
+    global: { headers: { Authorization: authHeader } },
   });
   const { data, error } = await supabase.auth.getUser();
   if (error) return { user: null, error: error.message } as const;
@@ -43,8 +47,8 @@ async function getAuthUser(req: Request) {
 }
 
 function adminClient() {
-  const url = getEnv("PROJECT_URL", "SUPABASE_URL");
-  const serviceKey = getEnv("SERVICE_ROLE_KEY", "SUPABASE_SERVICE_ROLE_KEY");
+  const url = getEnv("SUPABASE_URL", "PROJECT_URL");
+  const serviceKey = getEnv("SUPABASE_SERVICE_ROLE_KEY", "SERVICE_ROLE_KEY");
   if (!url || !serviceKey) throw new Error("Missing PROJECT_URL/SERVICE_ROLE_KEY");
   return createClient(url, serviceKey);
 }

@@ -10,7 +10,7 @@ export async function updateSession(request: NextRequest) {
   // 各リクエストごとに新しいインスタンスを作成してください。
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
@@ -36,6 +36,17 @@ export async function updateSession(request: NextRequest) {
   // ユーザーがランダムにログアウトされる可能性があります。
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
+
+  // ルート / はログイン画面へリダイレクト（app/page の 404 を避ける）
+  if (request.nextUrl.pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/sign-in";
+    const redirectResponse = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach(({ name, value, ...options }) =>
+      redirectResponse.cookies.set(name, value, options)
+    );
+    return redirectResponse;
+  }
 
   // 既にログイン済みのユーザーが admin サインインにアクセスした場合はレッスンページへリダイレクト
   if (request.nextUrl.pathname.startsWith("/admin/sign-in") && user) {
@@ -91,7 +102,9 @@ export async function updateSession(request: NextRequest) {
   // 1. Pass the request in it, like so:
   //    const myNewResponse = NextResponse.next({ request })
   // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
+  //    supabaseResponse.cookies.getAll().forEach(({ name, value, ...options }) =>
+  //      myNewResponse.cookies.set(name, value, options)
+  //    )
   // 3. Change the myNewResponse object to fit your needs, but avoid changing
   //    the cookies!
   // 4. Finally:

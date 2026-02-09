@@ -18,16 +18,36 @@ const EXERCISES: ExerciseOption[] = [
   { id: "swim", name: "水泳", met: 6.0 },
 ];
 
+function parsePositiveNum(s: string): number {
+  const n = parseFloat(s);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+function parseNonNegativeNum(s: string): number {
+  const n = parseFloat(s);
+  return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
 export default function RecordPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [foodName, setFoodName] = useState("ラーメン二郎（小）");
-  const [weightKg, setWeightKg] = useState<number>(0);
-  const [intakeKcal, setIntakeKcal] = useState<number>(1500);
+  const [weightKgStr, setWeightKgStr] = useState("");
+  const [intakeKcalStr, setIntakeKcalStr] = useState("1500");
   const [exerciseId, setExerciseId] = useState<string>("none");
-  const [durationMin, setDurationMin] = useState<number>(0);
+  const [durationMinStr, setDurationMinStr] = useState("");
   const [memo, setMemo] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const weightKgNum = useMemo(() => parsePositiveNum(weightKgStr), [weightKgStr]);
+  const intakeKcalNum = useMemo(
+    () => parseNonNegativeNum(intakeKcalStr),
+    [intakeKcalStr]
+  );
+  const durationMinNum = useMemo(
+    () => parseNonNegativeNum(durationMinStr),
+    [durationMinStr]
+  );
 
   const selectedExercise = useMemo(
     () => EXERCISES.find((e) => e.id === exerciseId) ?? EXERCISES[0],
@@ -36,15 +56,15 @@ export default function RecordPage() {
 
   const burnedKcal = useMemo(() => {
     if (!selectedExercise || selectedExercise.met <= 0) return 0;
-    if (!weightKg || !durationMin) return 0;
-    const perMinute = (selectedExercise.met * 3.5 * weightKg) / 200;
-    return Math.max(0, Math.round(perMinute * durationMin));
-  }, [durationMin, selectedExercise, weightKg]);
+    if (!weightKgNum || !durationMinNum) return 0;
+    const perMinute = (selectedExercise.met * 3.5 * weightKgNum) / 200;
+    return Math.max(0, Math.round(perMinute * durationMinNum));
+  }, [durationMinNum, selectedExercise, weightKgNum]);
 
-  const diffKcal = useMemo(() => Math.max(0, intakeKcal - burnedKcal), [
-    intakeKcal,
-    burnedKcal,
-  ]);
+  const diffKcal = useMemo(
+    () => Math.max(0, intakeKcalNum - burnedKcal),
+    [intakeKcalNum, burnedKcal]
+  );
 
   const suggestions: { title: string; met: number; kind: string }[] = [
     { title: "縄跳び(速め)", met: 12.3, kind: "有酸素" },
@@ -53,11 +73,17 @@ export default function RecordPage() {
   ];
 
   const minutesRequired = (met: number) => {
-    if (!met || met <= 0 || !weightKg || !intakeKcal) return 0;
-    const perMinute = (met * 3.5 * weightKg) / 200;
+    if (!met || met <= 0 || !weightKgNum || !intakeKcalNum) return 0;
+    const perMinute = (met * 3.5 * weightKgNum) / 200;
     if (perMinute <= 0) return 0;
-    return Math.max(0, Math.round(intakeKcal / perMinute));
+    return Math.max(0, Math.round(intakeKcalNum / perMinute));
   };
+
+  const isFormValid =
+    !!foodName.trim() &&
+    weightKgNum > 0 &&
+    Number.isFinite(parseFloat(intakeKcalStr)) &&
+    parseFloat(intakeKcalStr) >= 0;
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -65,7 +91,9 @@ export default function RecordPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">食品名</label>
+          <label className="block text-sm font-medium mb-1">
+            食品名 <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
+          </label>
           <input
             type="text"
             className="w-full rounded border border-gray-300 px-3 py-2"
@@ -75,26 +103,30 @@ export default function RecordPage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">体重(kg)</label>
+          <label className="block text-sm font-medium mb-1">
+            体重(kg) <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
+          </label>
           <input
             type="number"
             inputMode="decimal"
-            className="w-full rounded border border-gray-300 px-3 py-2"
+            className="input-no-spinner w-full rounded border border-gray-300 px-3 py-2"
             placeholder="例：65"
-            value={weightKg}
-            onChange={(e) => setWeightKg(Number(e.target.value))}
+            value={weightKgStr}
+            onChange={(e) => setWeightKgStr(e.target.value)}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">摂取カロリー(kcal)</label>
+          <label className="block text-sm font-medium mb-1">
+            摂取カロリー(kcal) <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
+          </label>
           <input
             type="number"
             inputMode="numeric"
             className="w-full rounded border border-gray-300 px-3 py-2"
             placeholder="例：1500"
-            value={intakeKcal}
-            onChange={(e) => setIntakeKcal(Number(e.target.value))}
+            value={intakeKcalStr}
+            onChange={(e) => setIntakeKcalStr(e.target.value)}
           />
         </div>
         <div>
@@ -129,17 +161,17 @@ export default function RecordPage() {
           <input
             type="number"
             inputMode="numeric"
-            className="w-full rounded border border-gray-300 px-3 py-2"
+            className="input-no-spinner w-full rounded border border-gray-300 px-3 py-2"
             placeholder="例：30"
-            value={durationMin}
-            onChange={(e) => setDurationMin(Number(e.target.value))}
+            value={durationMinStr}
+            onChange={(e) => setDurationMinStr(e.target.value)}
           />
         </div>
       </div>
 
       <div className="flex flex-wrap gap-3 mt-4">
         <span className="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-sm font-semibold text-yellow-800">
-          摂取 {intakeKcal} kcal
+          摂取 {intakeKcalNum} kcal
         </span>
         <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-800">
           消費 {burnedKcal} kcal
@@ -174,23 +206,33 @@ export default function RecordPage() {
         ))}
       </div>
 
+      {!isFormValid && weightKgNum <= 0 && (
+        <p className="mt-4 text-sm text-amber-700" role="alert">
+          記録するには体重(kg)を入力してください。
+        </p>
+      )}
+
       <div className="mt-6">
         <button
           type="button"
-          className="w-full md:w-auto rounded bg-black px-6 py-3 text-white font-semibold"
+          disabled={!isFormValid}
+          className="w-full md:w-auto rounded bg-black px-6 py-3 text-white font-semibold disabled:cursor-not-allowed disabled:opacity-60"
           onClick={async () => {
             if (!foodName.trim()) {
               alert("食品名を入力してください");
               return;
             }
-            if (!weightKg || weightKg <= 0) {
+            const w = parseFloat(weightKgStr);
+            if (!Number.isFinite(w) || w <= 0) {
               alert("体重(kg)は0より大きい値を入力してください");
               return;
             }
-            if (intakeKcal == null || Number.isNaN(intakeKcal) || intakeKcal < 0) {
+            const kcal = parseFloat(intakeKcalStr);
+            if (!Number.isFinite(kcal) || kcal < 0) {
               alert("摂取カロリーは0以上で入力してください");
               return;
             }
+            const dur = durationMinStr.trim() === "" ? 0 : parseNonNegativeNum(durationMinStr);
             let imageUrl: string | null = null;
             try {
               if (imageFile) {
@@ -206,7 +248,7 @@ export default function RecordPage() {
                     method: "POST",
                     headers: {
                       Authorization: `Bearer ${token}`,
-                      apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!,
+                      apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
                     },
                     body: form,
                   }
@@ -223,12 +265,21 @@ export default function RecordPage() {
               return;
             }
 
+            await supabase.auth.refreshSession();
+            const { data: sessionData } = await supabase.auth.getSession();
+            const accessToken = sessionData.session?.access_token;
+            if (!accessToken) {
+              alert("ログインし直してください。");
+              router.push("/auth/sign-in");
+              return;
+            }
+
             const payload = {
               food_name: foodName,
-              weight_kg: weightKg,
-              intake_kcal: intakeKcal,
+              weight_kg: w,
+              intake_kcal: kcal,
               exercise_id: exerciseId === "none" ? null : exerciseId,
-              duration_minutes: durationMin || null,
+              duration_minutes: dur > 0 ? dur : null,
               burned_kcal: burnedKcal || null,
               memo: memo || null,
               image_url: imageUrl,
@@ -238,6 +289,7 @@ export default function RecordPage() {
             const { data, error } = await supabase.functions.invoke<ServerResult>("records", {
               method: "POST",
               body: payload,
+              headers: { Authorization: `Bearer ${accessToken}` },
             });
             if (error) {
               const serverMessage = (data && typeof data === "object" && "error" in data)

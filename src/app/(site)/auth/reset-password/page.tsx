@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, FormEvent } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, FormEvent } from "react";
 import { createClient } from "@/services/supabase-service/client";
 
 export default function Page() {
@@ -103,7 +104,7 @@ export default function Page() {
                 className="absolute inset-y-0 right-2 my-auto h-8 rounded px-2 text-xs text-neutral-700 hover:bg-neutral-100"
                 aria-label={showPassword ? "パスワードを隠す" : "パスワードを表示"}
               >
-                {showPassword ? "Hide" : "Show"}
+                {showPassword ? <Eye size={20} aria-hidden /> : <EyeOff size={20} aria-hidden />}
               </button>
             </div>
           </section>

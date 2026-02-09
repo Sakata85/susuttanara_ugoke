@@ -1,7 +1,7 @@
 "use client";
 
 import { createClient } from "@/services/supabase-service/client";
-import Image from "next/image";
+import { History, LogIn, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -45,7 +45,7 @@ export default function Header() {
             className="ml-auto flex flex-col items-center gap-0.5 text-black"
             aria-label="Login"
           >
-            <Image src="/login.svg" alt="Login" width={24} height={24} />
+            <LogIn size={24} aria-hidden />
             <span className="text-[0.625rem] leading-none tracking-wide">LOGIN</span>
           </Link>
         )}
@@ -57,11 +57,7 @@ export default function Header() {
               className="flex flex-col items-center gap-0.5 text-black"
               aria-label="History"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 8v5l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M3 12a9 9 0 1 1 3.87 7.44" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M3 12H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <History size={24} aria-hidden />
               <span className="text-[0.625rem] leading-none tracking-wide">HISTORY</span>
             </Link>
             <button
@@ -81,7 +77,7 @@ export default function Header() {
               aria-label="Logout"
               disabled={signingOut}
             >
-              <Image src="/logout.svg" alt="Logout" width={24} height={24} />
+              <LogOut size={24} aria-hidden />
               <span className="text-[0.625rem] leading-none tracking-wide">LOGOUT</span>
             </button>
           </div>
@@ -93,7 +89,7 @@ export default function Header() {
             className="ml-auto flex flex-col items-center gap-0.5 text-black"
             aria-label="Login"
           >
-            <Image src="/login.svg" alt="Login" width={24} height={24} />
+            <LogIn size={24} aria-hidden />
             <span className="text-[0.625rem] leading-none tracking-wide">LOGIN</span>
           </Link>
         )}
@@ -115,7 +111,7 @@ export default function Header() {
             aria-label="Logout"
             disabled={signingOut}
           >
-            <Image src="/logout.svg" alt="Logout" width={24} height={24} />
+            <LogOut size={24} aria-hidden />
             <span className="text-[0.625rem] leading-none tracking-wide">LOGOUT</span>
           </button>
         )}
