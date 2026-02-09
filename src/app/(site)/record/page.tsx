@@ -280,7 +280,6 @@ export default function RecordPage() {
               intake_kcal: kcal,
               exercise_id: exerciseId === "none" ? null : exerciseId,
               duration_minutes: dur > 0 ? dur : null,
-              burned_kcal: burnedKcal || null,
               memo: memo || null,
               image_url: imageUrl,
             };

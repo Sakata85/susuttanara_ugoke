@@ -10,6 +10,29 @@ import { getAuthToken, verifySupabaseJWT } from "../_shared/jwt.ts";
 
 const TABLE_NAME = "t_record";
 
+// クライアントの EXERCISES と同一の ID・MET。消費カロリーはサーバーで計算するためここで定義
+const EXERCISE_MET: Record<string, number> = {
+  none: 0,
+  walk: 3.5,
+  jog_8: 8.3,
+  rope_fast: 12.3,
+  swim: 6.0,
+};
+
+function computeBurnedKcal(
+  exerciseId: string | null,
+  durationMinutes: number | null,
+  weightKg: number
+): number | null {
+  if (!exerciseId || exerciseId === "none" || durationMinutes == null || durationMinutes <= 0 || weightKg <= 0) {
+    return null;
+  }
+  const met = EXERCISE_MET[exerciseId];
+  if (met == null || met <= 0) return null;
+  const perMinute = (met * 3.5 * weightKg) / 200;
+  return Math.max(0, Math.round(perMinute * durationMinutes));
+}
+
 function cors(req: Request): HeadersInit {
   const origin = req.headers.get("origin") ?? "*";
   return {
@@ -85,14 +108,18 @@ serve(async (req: Request) => {
         return json({ error: "invalid payload" }, { status: 400, headers: cors(req) });
       }
 
+      const exerciseId = input.exercise_id ?? null;
+      const durationMinutes = input.duration_minutes != null ? Number(input.duration_minutes) : null;
+      const burned_kcal = computeBurnedKcal(exerciseId, durationMinutes, weight_kg);
+
       const payload: Record<string, any> = {
         auth_user_id: user.id,
         food_name,
         weight_kg,
         intake_kcal,
-        exercise_id: input.exercise_id ?? null,
-        duration_minutes: input.duration_minutes ?? null,
-        burned_kcal: input.burned_kcal ?? null,
+        exercise_id: exerciseId,
+        duration_minutes: durationMinutes,
+        burned_kcal,
         memo: input.memo ?? null,
         image_url: input.image_url ?? null,
         create_user: user.id,
