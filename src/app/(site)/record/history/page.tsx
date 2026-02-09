@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/services/supabase-service/client";
 
 type RecordItem = {
   id: string;
@@ -145,4 +145,3 @@ export default function HistoryPage() {
     </div>
   );
 }
-

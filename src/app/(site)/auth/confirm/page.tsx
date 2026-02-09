@@ -5,7 +5,7 @@ export default function Page() {
     <main className="mx-auto w-full max-w-md px-4 py-10 sm:px-6">
       <h2 className="mb-10 text-center text-xl font-bold text-black">メール確認のお願い</h2>
 
-      <div className="space-y-6 rounded-md border border-black bg-[#ffeb00] p-6">
+      <div className="flex flex-col gap-6 rounded-md border border-black bg-[#ffeb00] p-6">
         <p className="text-sm leading-relaxed">
           ご登録いただいたメールアドレス宛に確認メールを送信しました。メールに記載のリンクをクリックして登録を完了してください。
         </p>
@@ -22,10 +22,7 @@ export default function Page() {
         >
           ログインへ
         </Link>
-     
       </div>
     </main>
   );
 }
-
-

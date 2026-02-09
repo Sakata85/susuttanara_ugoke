@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/services/supabase-service/client";
 
 type ExerciseOption = {
   id: string;
   name: string;
-  met: number; // 代謝当量
+  met: number;
 };
 
 const EXERCISES: ExerciseOption[] = [
@@ -37,7 +37,7 @@ export default function RecordPage() {
   const burnedKcal = useMemo(() => {
     if (!selectedExercise || selectedExercise.met <= 0) return 0;
     if (!weightKg || !durationMin) return 0;
-    const perMinute = (selectedExercise.met * 3.5 * weightKg) / 200; // 1分あたり
+    const perMinute = (selectedExercise.met * 3.5 * weightKg) / 200;
     return Math.max(0, Math.round(perMinute * durationMin));
   }, [durationMin, selectedExercise, weightKg]);
 
@@ -152,7 +152,7 @@ export default function RecordPage() {
       <div className="mt-4">
         <label className="block text-sm font-medium mb-1">メモ</label>
         <textarea
-          className="w-full rounded border border-gray-300 px-3 py-2 min-h-[100px]"
+          className="w-full rounded border border-gray-300 px-3 py-2 min-h-[6.25rem]"
           placeholder="運動メモ・体調など"
           value={memo}
           onChange={(e) => setMemo(e.target.value)}
@@ -198,7 +198,6 @@ export default function RecordPage() {
                 const token = sessionData.session?.access_token ?? "";
                 const form = new FormData();
                 form.append("image_file", imageFile);
-                // 事前にpublicか任意のバケットを作成しておいてください（公開）。
                 form.append("bucket", "record-images");
 
                 const res = await fetch(

@@ -3,7 +3,7 @@
 import { useMemo, useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/services/supabase-service/client";
 
 export default function Page() {
   const router = useRouter();
@@ -59,27 +59,27 @@ export default function Page() {
     <main className="mx-auto w-full max-w-md px-4 py-10 sm:px-6">
       <h2 className="mb-10 text-center text-xl font-bold text-black">ログイン</h2>
 
-      <form onSubmit={onSubmit} className="space-y-8">
-        <div className="space-y-6 rounded-md border border-black bg-[#ffeb00] p-6">
-          <section className="space-y-3">
+      <form onSubmit={onSubmit} className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6 rounded-md border border-black bg-[#ffeb00] p-6">
+          <section className="flex flex-col gap-3">
             <div className="mb-1 flex items-center gap-2">
               <span className="text-sm font-bold">メールアドレス</span>
-              <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[10px] font-bold text-white">必須</span>
+              <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
             </div>
             <input
               className="h-12 w-full rounded border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-black"
               placeholder="sample@sample.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              type="email"
+              type="text"
               autoComplete="email"
             />
           </section>
 
-          <section className="space-y-3">
+          <section className="flex flex-col gap-3">
             <div className="mb-1 flex items-center gap-2">
               <span className="text-sm font-bold">パスワード</span>
-              <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[10px] font-bold text-white">必須</span>
+              <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
             </div>
             <div className="relative">
               <input
@@ -123,11 +123,9 @@ export default function Page() {
           >
             {submitting ? "ログイン中..." : "ログイン"}
           </button>
-         
+
         </div>
       </form>
     </main>
   );
 }
-
-
