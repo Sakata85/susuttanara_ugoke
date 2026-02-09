@@ -26,7 +26,6 @@ export default function Page() {
           setIsRecovery(true);
         }
       } catch {
-        // noop
       }
     })();
 
@@ -77,7 +76,7 @@ export default function Page() {
       <h2 className="mb-10 text-center text-xl font-bold text-black">パスワード再設定</h2>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-8">
-        <div className="flex flex-col gap-6 rounded-md border border-black bg-[#ffeb00] p-6">
+        <div className="flex flex-col gap-6 rounded-md border border-black bg-background p-6">
           {!isRecovery && (
             <div className="rounded border border-blue-300 bg-blue-50 p-3 text-sm text-blue-700">
               メール内のリンクからこのページにアクセスしてください。
@@ -87,7 +86,7 @@ export default function Page() {
           <section className="flex flex-col gap-3">
             <div className="mb-1 flex items-center gap-2">
               <span className="text-sm font-bold">新しいパスワード</span>
-              <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
+              <span className="rounded bg-required-badge px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
             </div>
             <div className="relative">
               <input
@@ -112,7 +111,7 @@ export default function Page() {
           <section className="flex flex-col gap-3">
             <div className="mb-1 flex items-center gap-2">
               <span className="text-sm font-bold">新しいパスワード（確認）</span>
-              <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
+              <span className="rounded bg-required-badge px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
             </div>
             <input
               className="h-12 w-full rounded border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-black"

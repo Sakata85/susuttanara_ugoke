@@ -131,7 +131,7 @@ export default function HistoryPage() {
             const burned = r.burned_kcal ?? 0;
             const diff = Math.max(0, (r.intake_kcal || 0) - burned);
             return (
-              <div key={r.id} className="rounded-xl border border-black/50 bg-[#fff3a6] p-4">
+              <div key={r.id} className="rounded-xl border border-black/50 bg-card-highlight p-4">
                 <p className="font-bold">{r.food_name}</p>
                 <p className="text-xs text-neutral-700 mt-1">
                   {r.create_date ? new Date(r.create_date).toLocaleString() : ""}

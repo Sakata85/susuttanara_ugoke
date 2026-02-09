@@ -72,12 +72,12 @@ export default function RecordPage() {
     { title: "水泳", met: 6.0, kind: "有酸素" },
   ];
 
-  const minutesRequired = (met: number) => {
+  function minutesRequired(met: number) {
     if (!met || met <= 0 || !weightKgNum || !intakeKcalNum) return 0;
     const perMinute = (met * 3.5 * weightKgNum) / 200;
     if (perMinute <= 0) return 0;
     return Math.max(0, Math.round(intakeKcalNum / perMinute));
-  };
+  }
 
   const isFormValid =
     !!foodName.trim() &&
@@ -92,7 +92,7 @@ export default function RecordPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">
-            食品名 <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
+            食品名 <span className="rounded bg-required-badge px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
           </label>
           <input
             type="text"
@@ -104,7 +104,7 @@ export default function RecordPage() {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">
-            体重(kg) <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
+            体重(kg) <span className="rounded bg-required-badge px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
           </label>
           <input
             type="number"
@@ -118,7 +118,7 @@ export default function RecordPage() {
 
         <div>
           <label className="block text-sm font-medium mb-1">
-            摂取カロリー(kcal) <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
+            摂取カロリー(kcal) <span className="rounded bg-required-badge px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
           </label>
           <input
             type="number"

@@ -15,30 +15,24 @@ export default function Header() {
 
   useEffect(() => {
     const supabase = createClient();
-
-    // 初期セッション取得
     supabase.auth.getSession().then(({ data }) => {
       setIsAuthenticated(!!data.session);
       setLoading(false);
     });
-
-    // 認証状態の変化を購読
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
     });
-
     return () => {
       subscription?.subscription?.unsubscribe?.();
     };
   }, []);
 
   return (
-    <header className="border-b border-black bg-[#ffeb00]">
+    <header className="border-b border-black bg-background">
       <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between px-4 text-black">
         <h1 className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-sm font-bold text-black sm:text-base">
           すすったなら動け！
         </h1>
-        {/* auth配下: ログインボタンのみ表示 */}
         {!loading && pathname?.startsWith("/auth") && (
           <Link
             href="/auth/sign-in"
@@ -49,7 +43,6 @@ export default function Header() {
             <span className="text-[0.625rem] leading-none tracking-wide">LOGIN</span>
           </Link>
         )}
-        {/* record配下: HISTORY + LOGOUT を表示（想定として認証済み） */}
         {!loading && pathname?.startsWith("/record") && isAuthenticated && (
           <div className="ml-auto flex items-center gap-4">
             <Link
@@ -82,7 +75,6 @@ export default function Header() {
             </button>
           </div>
         )}
-        {/* その他ページ: 既存の挙動（未ログイン: LOGIN、ログイン: LOGOUT） */}
         {!loading && !pathname?.startsWith("/auth") && !pathname?.startsWith("/record") && !isAuthenticated && (
           <Link
             href="/auth/sign-in"

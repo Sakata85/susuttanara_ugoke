@@ -6,8 +6,6 @@ export async function updateSession(request: NextRequest) {
     request,
   });
 
-  // Fluid compute 環境では、このクライアントをグローバル環境変数に置かないでください。
-  // 各リクエストごとに新しいインスタンスを作成してください。
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -29,15 +27,10 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // createServerClient と supabase.auth.getClaims() の間でコードを実行しないでください。
-  // 些細なミスがあると、
-  // ユーザーがランダムにログアウトする問題のデバッグが非常に難しくなります。
-  // 重要: getClaims() を削除した状態で Supabase クライアントを用いた SSR を行うと、
-  // ユーザーがランダムにログアウトされる可能性があります。
+  /* getClaims() を省略したり getClaims より前に処理を挟むと、ユーザーがランダムにログアウトする原因になる */
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
-  // ルート / はログイン画面へリダイレクト（app/page の 404 を避ける）
   if (request.nextUrl.pathname === "/") {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/sign-in";
@@ -48,7 +41,6 @@ export async function updateSession(request: NextRequest) {
     return redirectResponse;
   }
 
-  // 既にログイン済みのユーザーが admin サインインにアクセスした場合はレッスンページへリダイレクト
   if (request.nextUrl.pathname.startsWith("/admin/sign-in") && user) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/lessons";
@@ -64,28 +56,23 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname !== "/admin" &&
     !request.nextUrl.pathname.startsWith("/admin/sign-up")
   ) {
-    // 未ログインの場合は、ログインページへリダイレクトさせる
     const url = request.nextUrl.clone();
     url.pathname = "/auth/sign-in";
     return NextResponse.redirect(url);
   }
 
-  // 管理者ガード: 専用の admin サインインページを除き、/admin へは
-  // profiles.user_authority_type === 'admin' のユーザーのみアクセス可能にする
   if (
     request.nextUrl.pathname.startsWith("/admin") &&
     !request.nextUrl.pathname.startsWith("/admin/sign-in") &&
     !request.nextUrl.pathname.startsWith("/admin/sign-up") &&
     request.nextUrl.pathname !== "/admin"
   ) {
-    // 未ログインなら admin サインインへリダイレクト
     if (!user) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/sign-in";
       return NextResponse.redirect(url);
     }
 
-    // JWT の claims (app_metadata) から管理者ロールをチェックする
     const isAdmin =
       (user as Record<string, unknown> & { app_metadata?: Record<string, unknown> })?.app_metadata
         ?.user_authority_type === "admin";
@@ -97,20 +84,6 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    supabaseResponse.cookies.getAll().forEach(({ name, value, ...options }) =>
-  //      myNewResponse.cookies.set(name, value, options)
-  //    )
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
-
+  /* リダイレクト等で新しい Response を返す場合は、supabaseResponse の cookies をコピーしてから返すこと */
   return supabaseResponse;
 }

@@ -61,11 +61,11 @@ export default function Page() {
       <h2 className="mb-10 text-center text-xl font-bold text-black">ログイン</h2>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-8">
-        <div className="flex flex-col gap-6 rounded-md border border-black bg-[#ffeb00] p-6">
+        <div className="flex flex-col gap-6 rounded-md border border-black bg-background p-6">
           <section className="flex flex-col gap-3">
             <div className="mb-1 flex items-center gap-2">
               <span className="text-sm font-bold">メールアドレス</span>
-              <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
+              <span className="rounded bg-required-badge px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
             </div>
             <input
               className="h-12 w-full rounded border border-neutral-300 bg-white px-3 text-sm outline-none focus:border-black"
@@ -80,7 +80,7 @@ export default function Page() {
           <section className="flex flex-col gap-3">
             <div className="mb-1 flex items-center gap-2">
               <span className="text-sm font-bold">パスワード</span>
-              <span className="rounded bg-[#E84119] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
+              <span className="rounded bg-required-badge px-1.5 py-0.5 text-[0.625rem] font-bold text-white">必須</span>
             </div>
             <div className="relative">
               <input

@@ -1,18 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffeb00; /* ラーメン二郎 看板イエロー */
-  --foreground: #111111; /* 濃いめの黒 */
+  --background: #ffeb00;
+  --foreground: #111111;
+  --required-badge: #e84119;
+  --card-highlight: #fff3a6;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-required-badge: var(--required-badge);
+  --color-card-highlight: var(--card-highlight);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
-
-/* ラーメン二郎看板モチーフのためダークモードも固定 */
 
 body {
   background: var(--background);
@@ -20,7 +22,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* 数値入力のスピンボタンを非表示（体重・実施分数など） */
 .input-no-spinner {
   -moz-appearance: textfield;
 }
