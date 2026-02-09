@@ -240,7 +240,7 @@ export default function RecordPage() {
                 const token = sessionData.session?.access_token ?? "";
                 const form = new FormData();
                 form.append("image_file", imageFile);
-                form.append("bucket", "record-images");
+                form.append("bucket", "images");
 
                 const res = await fetch(
                   `${process.env.NEXT_PUBLIC_SUPABASE_URL!}/functions/v1/upload-image`,
